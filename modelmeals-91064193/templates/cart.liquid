@@ -1,8 +1,4 @@
 <style>
-.delivery-date {
-  float: left;
-  font-weight: 700;
-}
 .js-qty {
   display: none;
 }
@@ -94,7 +90,7 @@
                   {% if property_size > 0 %}
                     {% for p in item.properties %}
                       {% unless p.last == blank %}
-                        {{ p.first }}:
+                        <br>{{ p.first }}:
 
                         {% comment %}
                           Check if there was an uploaded file associated
@@ -145,6 +141,7 @@
                         min="0"
                         data-id="{{ item.id }}"
                         data-submit="true"
+                        data-line={{ forloop.index }}
                         class="form-control input-number text-center ajaxcart--hide"
                         {% unless item.variant.inventory_management == blank or item.variant.inventory_policy == 'continue' %}
                           max="{{ item.variant.inventory_quantity }}"
@@ -333,11 +330,10 @@ Shopify.updateCartFromForm = function(input, form, callback) {
 };
 
 Shopify.removeItem = function(input, callback) {
-  var variant_id = input.dataset.id;
   var params = {
     type: 'POST',
     url: '/cart/change.js',
-    data:  'quantity=0&id='+variant_id,
+    data:  'quantity=0&line='+input.dataset.line,
     dataType: 'json',
     success: function(response) {
       if ((typeof callback) === 'function') {

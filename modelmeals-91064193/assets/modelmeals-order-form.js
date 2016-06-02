@@ -104,11 +104,13 @@ jQuery(function($) {
       var quantity = parseInt(this.value.replace(/\D/g, ''));
       var variantId = this.dataset.id;
       var subscribeVariantId = this.dataset.subscribeid;
+      var deliveryDate = this.dataset.delivery;
       if (quantity) {
         if (subscription > 0) {
           Shopify.itemsToAdd.push({
             'id': subscribeVariantId,
             'quantity': quantity,
+            'properties[delivery]': deliveryDate,
             'properties[shipping_interval_frequency]': "1",
             'properties[shipping_interval_unit_type]': "Weeks",
             'properties[subscription_id]': "14788"
@@ -116,7 +118,8 @@ jQuery(function($) {
         } else {
           Shopify.itemsToAdd.push({
             'id': variantId,
-            'quantity': quantity
+            'quantity': quantity,
+            'properties[delivery]': deliveryDate,
           });
         }
       }

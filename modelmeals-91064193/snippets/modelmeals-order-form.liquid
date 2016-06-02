@@ -66,6 +66,7 @@
                                 - {{ variant.sku }}
                               {% endunless %}
                             </a>
+                            <input type="text" id="{{ variant.id }}delivery" class="delivery-date hidden" name="properties[Delivery]" value="d">
                           </div>
                         </div>
                       </div>
@@ -111,6 +112,7 @@
                               data-product="{{ product.title }}"
                               data-price="{{ variant.price }}"
                               data-id="{{ variant.id }}"
+                              data-delivery=""
                               data-subscribeid="{{ variant.metafields.subscriptions.discount_variant_id }}"
                               min = "0"
                               {% unless variant.inventory_management == blank or variant.inventory_policy == 'continue' %}
@@ -170,3 +172,68 @@
 {% include "modelmeals-modal" %}
 {{ 'modelmeals-input-buttons.js' | asset_url | script_tag }}
 {{ 'modelmeals-order-form.js' | asset_url | script_tag }}
+<script>
+// Find and format next Sunday
+{% if template == 'page.order-this-sunday' or template == 'page.order' %}
+  var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+  function next(day) {
+    var today = new Date();
+    var today_day = today.getDay();
+    day = day.toLowerCase();
+
+    for (var i = 7; i--;) {
+      if (day === days[i]) {
+          day = (i < today_day) ? (i + 7) : i;
+          break;
+      }
+    }
+    var daysUntilNext = day - today_day;
+    return new Date().setDate(today.getDate() + daysUntilNext);
+  }
+
+  // insert a week day
+  var nextDate = new Date(next( "sunday" ));
+  var month = nextDate.getMonth() + 1;
+  var dayNumber = nextDate.getDate();
+  var year = nextDate.getFullYear();
+
+  var deliveryDay = document.querySelectorAll('.input-number')
+  for (var d = 0; d < deliveryDay.length; d++) {
+    deliveryDay[d].dataset.delivery = month + "/" + dayNumber + "/" + year;
+  }
+
+
+{% elsif template == 'page.order-next-sunday' %}
+
+var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+function next(day) {
+  var today = new Date();
+  var today_day = today.getDay();
+  day = day.toLowerCase();
+
+  for (var i = 14; i--;) {
+    if (day === days[i]) {
+        day = (i < today_day) ? (i + 14) : i;
+        break;
+    }
+  }
+  var daysUntilNext = day - today_day;
+  return new Date().setDate(today.getDate() + daysUntilNext);
+}
+
+// insert a week day
+var nextDate = new Date(next( "sunday" ));
+var month = nextDate.getMonth() + 1;
+var dayNumber = nextDate.getDate();
+var year = nextDate.getFullYear();
+
+var deliveryDay = document.querySelectorAll('.input-number')
+for (var d = 0; d < deliveryDay.length; d++) {
+  deliveryDay[d].dataset.delivery = month + "/" + dayNumber + "/" + year;
+}
+
+{% endif %}
+</script>
+{{ 'modelmeals-delivery-date.js' | asset_url | script_tag }}
