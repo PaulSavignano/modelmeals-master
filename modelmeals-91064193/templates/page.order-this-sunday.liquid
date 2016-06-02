@@ -1,0 +1,16 @@
+<div class="wrapper page-margin">
+  <div class="grid">
+    <div class="grid__item">
+      <div class="rte">
+        {{ page.content }}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% assign myArray = "order-for-this-sunday|add-on-options" | split: "|" %}
+{% include "modelmeals-order-form" %}
+
+<script>
+  document.getElementById('order-form-wrapper').classList.remove('hidden');
+</script>
