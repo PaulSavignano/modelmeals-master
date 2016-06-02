@@ -1,0 +1,172 @@
+<!-- Check if order page or order-packages page -->
+
+
+<div class="wrapper page-margin hidden" id="order-form-wrapper">
+  {% include "modelmeals-flash-messages" %}
+  <div class="cart__body">
+    {% for myHandle in myArray %}
+      {% assign collection = collections[myHandle] %}
+      {% if collection.products_count > 0 %}
+
+        <div class="cart__row medium-down cart__header-labels {% if forloop.first == true %}{% else %}order-header{% endif %}">
+          <div class="grid--full">
+            <div class="grid__item large--one-half">
+              <div class="grid--full">
+                <h3>{{ collection.title }}</h3>
+              </div>
+            </div>
+            <div class="grid__item large--one-half">
+              <div class="grid--full">
+                <div class="grid__item one-half medium-down--hide price">
+                  Price
+                </div>
+                <div class="grid__item one-half medium-down--hide text-right quantity">
+                  Quantity
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% for product in collection.products %}
+          {% if product.available %}
+            {% for variant in product.variants %}
+              {% if variant.available %}
+                <div class="cart__row">
+                  <div class="grid--full cart__row--table-large">
+
+
+                      <div class="grid__item large--one-half">
+                        <div class="grid--full cart__row--table-large">
+                          <div class="grid__item one-quarter">
+                            <a
+                              href="#"
+                              class="modal-img"
+                              data-toggle="modal"
+                              data-target="#mm-modal"
+                              data-productid="{{ product.id }}"
+                            >
+                              <img src="{{ product.featured_image.src | product_img_url: 'small' }}" alt="{{ product.featured_image.alt | escape }}"/>
+                            </a>
+                          </div>
+                          <div class="grid__item three-quarters cart__item__title">
+                            <a
+                              href="#"
+                              class="h4--body modal-description"
+                              data-toggle="modal"
+                              data-target="#mm-modal"
+                              data-title="{{ product.title }}"
+                              data-description="{{ product.description | strip_html }}"
+                            >
+                              {{ product.title }}
+                              {% unless variant.title contains 'Default' %}
+                                - {{ variant.title }}
+                              {% endunless %}
+                              {% unless variant.sku == '' %}
+                                - {{ variant.sku }}
+                              {% endunless %}
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+
+
+                    <div class="grid__item large--one-half">
+                      <div class="grid--full cart__row--table-large">
+
+                        <div class="grid__item one-half text-left">
+                          <span class="cart__mini-labels">{{ 'cart.label.price' | t }}</span>
+                          <span class="h3--body money" id="price{{ variant.id }}">{{ variant.price | money }}</span>
+                          {% if variant.metafields.subscriptions.discount_variant_id %}
+                            <span class="subscribe-btn">
+                              <button
+                                type="button"
+                                class="btn btn-default subscribe"
+                                data-product="{{ product.id }}"
+                                data-variant="{{ variant.id }}"
+                                data-subscriptionvariant="{{ variant.metafields.subscriptions.discount_variant_id }}"
+                                data-regularprice="{{ variant.price }}"
+                                data-subscriptionprice="{{ variant.metafields.subscriptions.discount_variant_price }}"
+                              >Subscribe</button>
+                            </span>
+                          {% endif %}
+                        </div>
+
+                        <div class="grid__item one-half text-right">
+                          <span class="cart__mini-labels">{{ 'cart.label.quantity' | t }}</span>
+
+                          <div class="input-group order-form-inputs">
+                            <span class="input-group-btn">
+                              <button type="button" class="btn btn-default btn-number" data-type="minus" data-field="{{ variant.id }}">
+                                <span class="glyphicon glyphicon-minus"></span>
+                              </button>
+                            </span>
+                            <input
+                              type="number"
+                              name="{{ variant.id }}"
+                              class="form-control input-number text-center {{ collection.handle }}"
+                              id="{{ variant.id }}"
+                              data-collectionid = "{{ collection.id }}";
+                              data-image="{{ product.featured_image.src | product_img_url: 'thumb' }}"
+                              data-product="{{ product.title }}"
+                              data-price="{{ variant.price }}"
+                              data-id="{{ variant.id }}"
+                              data-subscribeid="{{ variant.metafields.subscriptions.discount_variant_id }}"
+                              min = "0"
+                              {% unless variant.inventory_management == blank or variant.inventory_policy == 'continue' %}
+                                max="{{ variant.inventory_quantity }}"
+                              {% endunless %}
+                              value=""
+                            >
+                            <span class="input-group-btn">
+                              <button type="button" class="btn btn-default btn-number" data-type="plus" data-field="{{ variant.id }}">
+                                <span class="glyphicon glyphicon-plus"></span>
+                              </button>
+                            </span>
+                          </div>
+
+                        </div>
+
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Image Repo -->
+                <div class="hidden" id="img-repo{{ product.id }}">
+                  {% for image in product.images %}
+                    <div class="item" id="image{{ product.id }}">
+                      <img class="center-block img-responsive" title="{{ product.title }}" src="{{ image.src | img_url: 'grande' }}" alt="{{ image.alt | escape }}">
+                    </div>
+                  {% endfor %}
+                </div>
+                <!-- Image Repo End -->
+
+              {% endif %} <!-- if variant.available end -->
+            {% endfor %} <!-- for variant in product.variants end -->
+          {% endif %} <!-- if product.available end -->
+        {% endfor %} <!-- for product in collection.products end -->
+
+      {% else %}
+        <p>There are no products in this view.</p>
+      {% endif %} <!-- if collection.products_count > 0 -->
+    {% endfor %} <!-- for myHandle in myArray -->
+  </div>
+
+  <!-- Add to cart -->
+  <div class="cart__row">
+    <div class="grid__item large--one-quarter medium-down--one-whole add-to-cart">
+      <input class="btn btn--full btn--large add-to-cart-order-form" id="add-to-cart-order-form" value="ADD TO CART">
+    </div>
+  </div>
+  <!-- Add to cart end -->
+
+</div>
+
+
+
+
+{% include "modelmeals-modal" %}
+{{ 'modelmeals-input-buttons.js' | asset_url | script_tag }}
+{{ 'modelmeals-order-form.js' | asset_url | script_tag }}

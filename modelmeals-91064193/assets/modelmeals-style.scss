@@ -1,0 +1,80 @@
+.input-group {
+  float: right
+}
+
+
+input[type="number"][disabled] {
+  background-color: rgba(0,0,0,0.1);
+}
+
+.money {
+  vertical-align: middle;
+}
+
+.subscribe-btn {
+  padding-left: 8px;
+}
+
+input[type="number"], select {
+  display: inline;
+}
+
+.carousel-control.left,.carousel-control.right{
+  background-image:none;
+  margin-top:10%;
+  width:5%;
+}
+
+.form-control {
+  height: 37px;
+}
+
+.order-form-inputs {
+  width: 144px
+}
+
+.subscribe.btn-secondary {
+  color: black;
+  background-color: white;
+  border-color: black;
+}
+
+.subscribe-btn {
+  width: 110px;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.grid__item.one-half.medium-down--hide.price {
+  padding-left: 20px;
+}
+
+.grid__item.one-half.medium-down--hide.text-right.quantity {
+  padding-right: 40px;
+}
+
+a:focus {
+    outline: none;
+}
+
+.order-header {
+  padding-top: 90px;
+}
+.add-to-cart {
+  float: right;
+  padding-left: 0;
+}
+
+.grid__item.three-quarters.cart__item__title {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+
+#homepageHeroContent {
+  margin-top: 25%;
+  margin-bottom: 25%;
+}
