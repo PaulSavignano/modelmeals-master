@@ -1,7 +1,7 @@
 <!-- Check if order page or order-packages page -->
 
 
-<div class="wrapper page-margin hidden" id="order-form-wrapper">
+<div class="wrapper page-margin" id="order-form-wrapper">
   {% include "modelmeals-flash-messages" %}
   <div class="cart__body">
     {% for myHandle in myArray %}
@@ -204,6 +204,9 @@
   }
 
 
+
+
+
 {% elsif template == 'page.order-next-sunday' %}
 
 var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -215,7 +218,7 @@ function next(day) {
 
   for (var i = 14; i--;) {
     if (day === days[i]) {
-        day = (i < today_day) ? (i + 14) : i;
+        day = (i < today_day) ? (i + 14) : (i + 7);
         break;
     }
   }

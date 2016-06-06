@@ -8,9 +8,87 @@
   </div>
 </div>
 
-{% assign myArray = "order-for-this-sunday|add-on-options" | split: "|" %}
+{% if pages.order-for-next-sunday != blank %}
+<div class="wrapper page-margin">
+  <div class="grid">
+    <div class="grid__item">
+      <div class="rte">
+        <a href="/pages/order-for-next-sunday" id="next-sunday-link">Order for NEXT Sunday</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% assign myArray = "order-for-this-sunday|add-on-options-for-delivery-this-sunday" | split: "|" %}
 {% include "modelmeals-order-form" %}
 
 <script>
-  document.getElementById('order-form-wrapper').classList.remove('hidden');
+// Find and format next Sunday
+{% if pages.order-for-next-sunday == blank %}
+  var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+  function next(day) {
+    var today = new Date();
+    var today_day = today.getDay();
+    day = day.toLowerCase();
+
+    for (var i = 7; i--;) {
+      if (day === days[i]) {
+          day = (i + 7);
+          break;
+      }
+    }
+    var daysUntilNext = day - today_day;
+    return new Date().setDate(today.getDate() + daysUntilNext);
+  }
+
+  // insert a week day
+  var nextDate = new Date(next("sunday"));
+  var month = nextDate.getMonth() + 1;
+  var dayNumber = nextDate.getDate();
+  var year = nextDate.getFullYear();
+
+  var deliveryDay = document.querySelectorAll('.input-number')
+  for (var d = 0; d < deliveryDay.length; d++) {
+    deliveryDay[d].dataset.delivery = month + "/" + dayNumber + "/" + year;
+  }
+
+
+
+
+
+{% else %}
+
+var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+function next(day) {
+  var today = new Date();
+  var today_day = today.getDay();
+  day = day.toLowerCase();
+
+  for (var i = 7; i--;) {
+    if (day === days[i]) {
+          day = (i < today_day) ? (i + 7) : i;
+        break;
+    }
+  }
+  var daysUntilNext = day - today_day;
+  return new Date().setDate(today.getDate() + daysUntilNext);
+}
+
+// insert a week day
+var nextDate = new Date(next( "sunday" ));
+var month = nextDate.getMonth() + 1;
+var dayNumber = nextDate.getDate();
+var year = nextDate.getFullYear();
+
+var deliveryDay = document.querySelectorAll('.input-number')
+for (var d = 0; d < deliveryDay.length; d++) {
+  deliveryDay[d].dataset.delivery = month + "/" + dayNumber + "/" + year;
+}
+
+document.getElementById('next-sunday-link');
+
+{% endif %}
 </script>

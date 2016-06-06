@@ -141,7 +141,7 @@
                         min="0"
                         data-id="{{ item.id }}"
                         data-submit="true"
-                        data-line={{ forloop.index }}
+                        data-line="{{ forloop.index }}"
                         class="form-control input-number text-center ajaxcart--hide"
                         {% unless item.variant.inventory_management == blank or item.variant.inventory_policy == 'continue' %}
                           max="{{ item.variant.inventory_quantity }}"
@@ -249,6 +249,8 @@ function displayCartUpdate(response, input) {
   var priceEl = input.parentNode.parentNode.parentNode.children[2].children[1];
   var items = response.items;
 
+  console.log(response);
+
   if (input.value == '') {
     var row = input.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
     row.remove();
@@ -263,6 +265,10 @@ function displayCartUpdate(response, input) {
   }
   totalEl.innerHTML = totalCost;
   cartCostEl.innerHTML = totalCost;
+  for (var z = 0; z < items.length; z++) {
+    var lines = document.querySelectorAll('[data-line]');
+    lines[z].dataset.line = z + 1;
+  }
 }
 
 function deliveryNotes(response, input) {
