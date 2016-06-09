@@ -17,7 +17,7 @@
 
 
 {% if cart.item_count > 0 %}
-<div class="wrapper page-margin">
+<div class="wrapper page-margin" id="cart-body">
   {% include "modelmeals-flash-messages" %}
   <form action="/cart" method="post" novalidate class="cart" id="cart-form">
     <h3>{{ 'cart.general.title' | t }}</h3>
@@ -90,7 +90,7 @@
                   {% if property_size > 0 %}
                     {% for p in item.properties %}
                       {% unless p.last == blank %}
-                        <br>{{ p.first }}:
+                        <div>{{ p.first }}:
 
                         {% comment %}
                           Check if there was an uploaded file associated
@@ -98,10 +98,9 @@
                         {% if p.last contains '/uploads/' %}
                           <a href="{{ p.last }}">{{ p.last | split: '/' | last }}</a>
                         {% else %}
-                          {{ p.last }}
+                          {{ p.last }}</div>
                         {% endif %}
 
-                        <br>
                       {% endunless %}
                     {% endfor %}
                   {% endif %}
@@ -230,6 +229,12 @@
   </div>
 {% endif %}
 
+<div class="wrapper page-margin text-center hidden" id="cart-empty">
+  <h3 class="uppercase h3">{{ 'cart.general.title' | t }}</h3>
+  <p>{{ 'cart.general.empty' | t }}</p>
+  <a href="/pages/order" class="btn btn--large">{{ 'cart.general.continue_browsing_html' | t }}</a>
+</div>
+
 
 
 {% include "modelmeals-modal" %}
@@ -249,7 +254,10 @@ function displayCartUpdate(response, input) {
   var priceEl = input.parentNode.parentNode.parentNode.children[2].children[1];
   var items = response.items;
 
-  console.log(response);
+  if (response.item_count === 0) {
+    document.getElementById('cart-body').classList.add('hidden');
+    document.getElementById('cart-empty').classList.remove('hidden');
+  }
 
   if (input.value == '') {
     var row = input.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;

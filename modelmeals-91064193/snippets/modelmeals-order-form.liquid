@@ -10,12 +10,12 @@
 
         <div class="cart__row medium-down cart__header-labels {% if forloop.first == true %}{% else %}order-header{% endif %}">
           <div class="grid--full">
-            <div class="grid__item large--{% if collection.handle == 'package-options' %}one-half{% else %}two-thirds{% endif %}">
+            <div class="grid__item large--two-thirds">
               <div class="grid--full">
                 <h3>{{ collection.title }}</h3>
               </div>
             </div>
-            <div class="grid__item large--{% if collection.handle == 'package-options' %}one-half{% else %}one-third{% endif %}">
+            <div class="grid__item large--one-third">
               <div class="grid--full">
                 <div class="grid__item one-half medium-down--hide price">
                   Price
@@ -36,7 +36,7 @@
                   <div class="grid--full cart__row--table-large">
 
 
-                      <div class="grid__item large--{% if collection.handle == 'package-options' %}one-half{% else %}two-thirds{% endif %}">
+                      <div class="grid__item large--two-thirds">
                         <div class="grid--full cart__row--table-large">
                           <div class="grid__item one-fifth">
                             <a
@@ -72,25 +72,12 @@
                       </div>
 
 
-                    <div class="grid__item large--{% if collection.handle == 'package-options' %}one-half{% else %}one-third{% endif %}">
+                    <div class="grid__item large--one-third">
                       <div class="grid--full cart__row--table-large">
 
                         <div class="grid__item one-half text-left">
                           <span class="cart__mini-labels">{{ 'cart.label.price' | t }}</span>
                           <span class="h3--body money" id="price{{ variant.id }}">{{ variant.price | money }}</span>
-                          {% if variant.metafields.subscriptions.discount_variant_id %}
-                            <span class="subscribe-btn">
-                              <button
-                                type="button"
-                                class="btn btn-default subscribe"
-                                data-product="{{ product.id }}"
-                                data-variant="{{ variant.id }}"
-                                data-subscriptionvariant="{{ variant.metafields.subscriptions.discount_variant_id }}"
-                                data-regularprice="{{ variant.price }}"
-                                data-subscriptionprice="{{ variant.metafields.subscriptions.discount_variant_price }}"
-                              >Subscribe</button>
-                            </span>
-                          {% endif %}
                         </div>
 
                         <div class="grid__item one-half text-right">
@@ -168,75 +155,113 @@
 
 
 
-
 {% include "modelmeals-modal" %}
 {{ 'modelmeals-input-buttons.js' | asset_url | script_tag }}
-{{ 'modelmeals-order-form.js' | asset_url | script_tag }}
+
+
+
+
+
+
 <script>
-// Find and format next Sunday
-{% if template == 'page.order-this-sunday' or template == 'page.order' %}
-  var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+// Get currency
+function getCurrency(x) {
+  return '$ ' + x.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+//  Get order total
+function getCartTotal() {
+  var priceInputs = document.querySelectorAll('.input-number')
+  var total = 0;
+  for (var i = 0; i < priceInputs.length; i++) {
+    var quantity = parseInt(priceInputs[i].value.replace(/\D/g, ''), 10)
+    if (quantity > 0) {
+      var price = priceInputs[i].dataset.price / 100;
+      lineTotal =  quantity * price;
+      total += lineTotal;
+    }
+  }
+  var orderPrice = getCurrency(total);;
+  if (total > 0) {
+    document.getElementById('add-to-cart-order-form').value = 'ADD TO CART  |  ' + orderPrice;
+  } else {
+    document.getElementById('add-to-cart-order-form').value = 'ADD TO CART';
+  }
+}
 
-  function next(day) {
-    var today = new Date();
-    var today_day = today.getDay();
-    day = day.toLowerCase();
 
-    for (var i = 7; i--;) {
-      if (day === days[i]) {
-          day = (i < today_day) ? (i + 7) : i;
-          break;
+// Listen for click on inputs
+var inputButtons = document.querySelectorAll('.btn-number');
+for (var i = 0; i < inputButtons.length; i++) {
+  inputButtons[i].addEventListener('click', getCartTotal, false);
+  inputButtons[i].parentNode.parentNode.children[1].addEventListener('keyup', getCartTotal, false);
+}
+/* Get Total Order Cost */
+
+
+// Add to cart
+Shopify.itemsToAdd = [];
+Shopify.addItemstoTheCart = function() {
+  if (Shopify.itemsToAdd.length) {
+    var item = Shopify.itemsToAdd.pop();
+    $.ajax({
+      url: '/cart/add',
+      dataType: 'json',
+      type: 'post',
+      data: item,
+      success: Shopify.addItemstoTheCart,
+      error: Shopify.addItemstoTheCart
+    });
+  } else {
+    window.location.href = '/cart';
+  }
+}
+
+jQuery(function($) {
+  $('table .quantity:first').focus();
+  $('[max]').change(function() {
+    var max = parseInt($(this).attr('max'), 10);
+    var value = parseInt($(this).val(), 10) || 0;
+    if (value > max) {
+      alert('We only have ' + max + ' of this item in stock');
+      $(this).val(max);
+    }
+  });
+
+  // Add products with quantity to array
+  $('.add-to-cart-order-form').click(function() {
+    Shopify.itemsToAdd = [];
+    $('.input-number').each(function() {
+      var subscription = this.dataset.subscription;
+      var quantity = parseInt(this.value.replace(/\D/g, ''));
+      var variantId = this.dataset.id;
+      var subscribeVariantId = this.dataset.subscribeid;
+      var deliveryDate = this.dataset.delivery;
+      if (quantity) {
+        if (subscribeVariantId) {
+          Shopify.itemsToAdd.push({
+            'id': subscribeVariantId,
+            'quantity': quantity,
+            'properties[delivery]': deliveryDate,
+            'properties[shipping_interval_frequency]': "1",
+            'properties[shipping_interval_unit_type]': "Weeks",
+            'properties[subscription_id]': "14788"
+          });
+        } else {
+          Shopify.itemsToAdd.push({
+            'id': variantId,
+            'quantity': quantity,
+            'properties[delivery]': deliveryDate,
+          });
+        }
       }
+    });
+    if (Shopify.itemsToAdd.length) {
+      Shopify.addItemstoTheCart();
     }
-    var daysUntilNext = day - today_day;
-    return new Date().setDate(today.getDate() + daysUntilNext);
-  }
-
-  // insert a week day
-  var nextDate = new Date(next( "sunday" ));
-  var month = nextDate.getMonth() + 1;
-  var dayNumber = nextDate.getDate();
-  var year = nextDate.getFullYear();
-
-  var deliveryDay = document.querySelectorAll('.input-number')
-  for (var d = 0; d < deliveryDay.length; d++) {
-    deliveryDay[d].dataset.delivery = month + "/" + dayNumber + "/" + year;
-  }
-
-
-
-
-
-{% elsif template == 'page.order-next-sunday' %}
-
-var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
-function next(day) {
-  var today = new Date();
-  var today_day = today.getDay();
-  day = day.toLowerCase();
-
-  for (var i = 14; i--;) {
-    if (day === days[i]) {
-        day = (i < today_day) ? (i + 14) : (i + 7);
-        break;
+    else {
+      alert('All quantities are set to zero.');
+      $('.add-to-cart-order-form').removeAttr('disabled').removeClass('disabled');
     }
-  }
-  var daysUntilNext = day - today_day;
-  return new Date().setDate(today.getDate() + daysUntilNext);
-}
-
-// insert a week day
-var nextDate = new Date(next( "sunday" ));
-var month = nextDate.getMonth() + 1;
-var dayNumber = nextDate.getDate();
-var year = nextDate.getFullYear();
-
-var deliveryDay = document.querySelectorAll('.input-number')
-for (var d = 0; d < deliveryDay.length; d++) {
-  deliveryDay[d].dataset.delivery = month + "/" + dayNumber + "/" + year;
-}
-
-{% endif %}
+  });
+});
 </script>
-{{ 'modelmeals-delivery-date.js' | asset_url | script_tag }}

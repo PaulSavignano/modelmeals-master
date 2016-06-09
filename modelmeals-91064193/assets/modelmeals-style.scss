@@ -69,6 +69,14 @@ a:focus {
   padding-left: 0;
 }
 
+.center-align {
+  text-align: center;
+}
+
+#next-sunday-link {
+  font-size: 1.57143em;
+}
+
 @media only screen and (min-width: 769px) and (max-width: 900px)  {
   .grid__item.four-fifths.cart__item__title {
     padding-right: 8px;
