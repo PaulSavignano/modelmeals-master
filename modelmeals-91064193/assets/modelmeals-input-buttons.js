@@ -1,3 +1,10 @@
+/*============================================================================
+  Developer: Paul Savignano
+  Email: paul.savignano@gmail.com
+  Mobile: (619) 865-3725
+==============================================================================*/
+
+
 /* Plus and minus button events */
 function onClick(event) {
   $(".alert").alert()

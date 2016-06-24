@@ -1,3 +1,10 @@
+<!--============================================================================
+  Developer: Paul Savignano
+  Email: paul.savignano@gmail.com
+  Mobile: (619) 865-3725
+==============================================================================-->
+
+
 <div class="wrapper page-margin">
   <div class="grid">
     <div class="grid__item">
@@ -36,6 +43,7 @@
     var daysUntilNext = day - today_day;
     return new Date().setDate(today.getDate() + daysUntilNext);
   }
+
 
   var nextDate = new Date(next("sunday"));
   var month = nextDate.getMonth() + 1;
@@ -99,13 +107,13 @@ function suffix(dayNumber) {
     var j = dayNumber % 10,
         k = dayNumber % 100;
     if (j == 1 && k != 11) {
-        return i + "st";
+        return "st";
     }
     if (j == 2 && k != 12) {
-        return i + "nd";
+        return "nd";
     }
     if (j == 3 && k != 13) {
-        return i + "rd";
+        return "rd";
     }
     return "th";
 }
@@ -115,6 +123,7 @@ var followingMonth = followingNextDate.getMonth() + 1;
 var followingDayNumber = followingNextDate.getDate();
 var followingDaySuffix = suffix(followingDayNumber);
 var followingYear = followingNextDate.getFullYear();
+
 
 var monthNames = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"

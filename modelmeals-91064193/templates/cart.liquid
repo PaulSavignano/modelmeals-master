@@ -1,3 +1,10 @@
+<!--============================================================================
+  Developer: Paul Savignano
+  Email: paul.savignano@gmail.com
+  Mobile: (619) 865-3725
+==============================================================================-->
+
+
 <style>
 .js-qty {
   display: none;
@@ -257,6 +264,8 @@ function displayCartUpdate(response, input) {
   if (response.item_count === 0) {
     document.getElementById('cart-body').classList.add('hidden');
     document.getElementById('cart-empty').classList.remove('hidden');
+    document.querySelectorAll('.cartCost')[0].classList.add('hidden');
+
   }
 
   if (input.value == '') {
