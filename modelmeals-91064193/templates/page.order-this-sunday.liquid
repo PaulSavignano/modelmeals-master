@@ -25,57 +25,32 @@
 {% include "modelmeals-order-form" %}
 
 <script>
-// Find and format next Sunday
-{% if pages.order-for-next-sunday == blank %}
-  var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
-  function next(day) {
-    var today = new Date();
-    var today_day = today.getDay();
-    day = day.toLowerCase();
-
-    for (var i = 7; i--;) {
-      if (day === days[i]) {
-          day = (i + 7);
-          break;
-      }
-    }
-    var daysUntilNext = day - today_day;
-    return new Date().setDate(today.getDate() + daysUntilNext);
-  }
-
-
-  var nextDate = new Date(next("sunday"));
-  var month = nextDate.getMonth() + 1;
-  var dayNumber = nextDate.getDate();
-  var year = nextDate.getFullYear();
-
-  var deliveryDay = document.querySelectorAll('.input-number')
-  for (var d = 0; d < deliveryDay.length; d++) {
-    deliveryDay[d].dataset.delivery = month + "/" + dayNumber + "/" + year;
-  }
-
-
-
-
-
-{% else %}
+// Find current Sunday
 
 var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 function next(day) {
-  var today = new Date();
-  var today_day = today.getDay();
+  var date = new Date();
+  var today = date.getUTCDay();
+  var hour = date.getUTCHours();
   day = day.toLowerCase();
 
   for (var i = 7; i--;) {
     if (day === days[i]) {
-      day = (i < today_day) ? (i + 7) : i;
+      if (i < today) {
+        day = i + 8;
+      } else {
+        if (hour >= 19) {
+          day = i + 8;
+        } else {
+          day = i + 1;
+        }
+      }
       break;
     }
   }
-  var daysUntilNext = day - today_day;
-  return new Date().setDate(today.getDate() + daysUntilNext);
+  var daysUntilNext = day - today;
+  return new Date().setDate(date.getUTCDate() + daysUntilNext);
 }
 
 var nextDate = new Date(next("sunday"));
@@ -88,50 +63,4 @@ for (var d = 0; d < deliveryDay.length; d++) {
   deliveryDay[d].dataset.delivery = month + "/" + dayNumber + "/" + year;
 }
 
-function followingNext(day) {
-  var today = new Date();
-  var today_day = today.getDay();
-  day = day.toLowerCase();
-
-  for (var i = 14; i--;) {
-    if (day === days[i]) {
-        day = (i < today_day) ? (i + 14) : (i + 7);
-        break;
-    }
-  }
-  var daysUntilNext = day - today_day;
-  return new Date().setDate(today.getDate() + daysUntilNext);
-}
-
-function suffix(dayNumber) {
-    var j = dayNumber % 10,
-        k = dayNumber % 100;
-    if (j == 1 && k != 11) {
-        return "st";
-    }
-    if (j == 2 && k != 12) {
-        return "nd";
-    }
-    if (j == 3 && k != 13) {
-        return "rd";
-    }
-    return "th";
-}
-
-var followingNextDate = new Date(followingNext("sunday"));
-var followingMonth = followingNextDate.getMonth() + 1;
-var followingDayNumber = followingNextDate.getDate();
-var followingDaySuffix = suffix(followingDayNumber);
-var followingYear = followingNextDate.getFullYear();
-
-
-var monthNames = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-
-var followingDeliveryDay = document.getElementById('next-sunday-link');
-followingDeliveryDay.innerHTML = "Check out next weeks menu for Sunday" + ", " + monthNames[followingNextDate.getMonth()] + " " + followingDayNumber + followingDaySuffix + " " + followingYear;
-
-
-{% endif %}
 </script>

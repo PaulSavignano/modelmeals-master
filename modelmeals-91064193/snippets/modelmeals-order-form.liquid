@@ -104,7 +104,6 @@
                               data-product="{{ product.title }}"
                               data-price="{{ variant.price }}"
                               data-id="{{ variant.id }}"
-                              data-delivery=""
                               data-subscribeid="{{ variant.metafields.subscriptions.discount_variant_id }}"
                               min = "0"
                               {% unless variant.inventory_management == blank or variant.inventory_policy == 'continue' %}
@@ -240,13 +239,12 @@ jQuery(function($) {
       var quantity = parseInt(this.value.replace(/\D/g, ''));
       var variantId = this.dataset.id;
       var subscribeVariantId = this.dataset.subscribeid;
-      var deliveryDate = this.dataset.delivery;
+
       if (quantity) {
         if (subscribeVariantId) {
           Shopify.itemsToAdd.push({
             'id': subscribeVariantId,
             'quantity': quantity,
-            'properties[delivery]': deliveryDate,
             'properties[shipping_interval_frequency]': "1",
             'properties[shipping_interval_unit_type]': "Weeks",
             'properties[subscription_id]': "14788"
@@ -255,7 +253,6 @@ jQuery(function($) {
           Shopify.itemsToAdd.push({
             'id': variantId,
             'quantity': quantity,
-            'properties[delivery]': deliveryDate,
           });
         }
       }

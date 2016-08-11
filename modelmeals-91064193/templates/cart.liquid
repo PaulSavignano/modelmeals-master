@@ -253,6 +253,22 @@ function getCurrency(x) {
   return '$ ' + x.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
+Shopify.onError = function(XMLHttpRequest, textStatus) {
+  var data = eval('(' + XMLHttpRequest.responseText + ')');
+  if (!!data.message) {
+    console.log(data.message + '(' + data.status  + '): ' + data.description);
+  }
+};
+
+
+
+
+
+
+Shopify.onCartUpdate = function(cart) {
+  console.log('updateCartFromForm did not receive a callback');
+};
+
 function displayCartUpdate(response, input) {
   var cartCostEl = document.querySelectorAll('.cartCost')[0].children[0];
   var totalEl = document.querySelectorAll('.cart__subtotal')[0];
@@ -267,7 +283,6 @@ function displayCartUpdate(response, input) {
     document.querySelectorAll('.cartCost')[0].classList.add('hidden');
 
   }
-
   if (input.value == '') {
     var row = input.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
     row.remove();
@@ -287,49 +302,6 @@ function displayCartUpdate(response, input) {
     lines[z].dataset.line = z + 1;
   }
 }
-
-function deliveryNotes(response, input) {
-  //console.log(response);
-}
-
-function removeProduct(response, input) {
-  var row = input.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
-  row.remove();
-}
-
-
-
-
-function qtyAjaxCall() {
-  var input;
-  if (this.classList.contains('btn-number')) {
-    input = this.parentNode.parentNode.children[1];
-  } else {
-    input = this;
-  }
-  if (input.value == '') {
-    Shopify.removeItem(input, displayCartUpdate);
-  } else {
-    Shopify.updateCartFromForm(input, form, displayCartUpdate);
-  }
-}
-
-
-Shopify.onError = function(XMLHttpRequest, textStatus) {
-  var data = eval('(' + XMLHttpRequest.responseText + ')');
-  if (!!data.message) {
-    console.log(data.message + '(' + data.status  + '): ' + data.description);
-  }
-};
-
-Shopify.onCartUpdate = function(cart) {
-  //console.log('There are now ' + cart.item_count + ' items in the cart.');
-};
-
-
-
-
-var form = $('form[action="/cart"]');
 
 Shopify.updateCartFromForm = function(input, form, callback) {
   var params = {
@@ -373,28 +345,34 @@ Shopify.removeItem = function(input, callback) {
   jQuery.ajax(params);
 };
 
-function noteAjaxCall() {
-  var allergyNote = document.getElementById('allergies').value;
-  var deliveryNote = document.getElementById('delivery').value;
-  var sumNote;
-
-  if (allergyNote && deliveryNote) {
-    sumNote = "Allergies: " + allergyNote + ", " + "Delivery: " + deliveryNote;
-  } else if (allergyNote) {
-    sumNote = "Allergies: " + allergyNote;
-  } else if (deliveryNote) {
-    sumNote = "Delivery: " + deliveryNote;
-  }
-
-  var displayCartNoteSum = document.getElementById('CartSpecialInstructions');
-  if (sumNote) {
-    displayCartNoteSum.value = sumNote.replace(', ', '\n');
+function qtyAjaxCall() {
+  var form = $('form[action="/cart"]');
+  var input;
+  if (this.classList.contains('btn-number')) {
+    input = this.parentNode.parentNode.children[1];
   } else {
-    displayCartNoteSum.value = '';
+    input = this;
   }
-
-  Shopify.updateCartNote(sumNote, deliveryNotes);
+  if (input.value == '') {
+    Shopify.removeItem(input, displayCartUpdate);
+  } else {
+    Shopify.updateCartFromForm(input, form, displayCartUpdate);
+  }
 }
+
+var inputButtons = document.querySelectorAll('.btn-number');
+for (var i = 0; i < inputButtons.length; i++) {
+  inputButtons[i].addEventListener('click', qtyAjaxCall, false);
+  inputButtons[i].parentNode.parentNode.children[1].addEventListener('keyup', qtyAjaxCall, false);
+}
+
+
+
+
+
+
+
+
 
 
 Shopify.updateCartNote = function(note, callback) {
@@ -418,18 +396,47 @@ Shopify.updateCartNote = function(note, callback) {
   jQuery.ajax(params);
 };
 
-
-
-var inputButtons = document.querySelectorAll('.btn-number');
-for (var i = 0; i < inputButtons.length; i++) {
-  inputButtons[i].addEventListener('click', qtyAjaxCall, false);
-  inputButtons[i].parentNode.parentNode.children[1].addEventListener('keyup', qtyAjaxCall, false);
+function deliveryNotes(response, input) {
+  //console.log(response);
 }
 
+// update notes on keyup
+function noteAjaxCall() {
+  var allergyNote = document.getElementById('allergies').value;
+  var deliveryNote = document.getElementById('delivery').value;
+  var referralNote = document.getElementById('referral').value;
+  var sumNote;
+
+  if (allergyNote && deliveryNote && referralNote) {
+    sumNote = "Allergies: " + allergyNote + ", " + "Delivery: " + deliveryNote + ", " + "Referral: " + referralNote;
+  } else if (allergyNote && deliveryNote) {
+    sumNote = "Allergies: " + allergyNote + ", " + "Delivery: " + deliveryNote;
+  } else if (allergyNote && referralNote) {
+    sumNote = "Allergies: " + allergyNote + ", " + "Referral: " + referralNote;
+  } else if (deliveryNote && referralNote) {
+    sumNote = "Delivery: " + deliveryNote  + ", " + "Referral: " + referralNote;
+  } else if (allergyNote) {
+    sumNote = "Allergies: " + allergyNote;
+  } else if (deliveryNote) {
+    sumNote = "Delivery: " + deliveryNote;
+  } else if (referralNote) {
+    sumNote = "Delivery: " + referralNote;
+  }
+
+  var displayCartNoteSum = document.getElementById('CartSpecialInstructions');
+  if (sumNote) {
+    displayCartNoteSum.value = sumNote.replace(/, /g, '\n');
+  } else {
+    displayCartNoteSum.value = '';
+  }
+  console.log(sumNote)
+  Shopify.updateCartNote(sumNote, deliveryNotes);
+}
 
 var noteInputs = document.querySelectorAll('.cart-note');
 for (var x = 0; x < noteInputs.length; x++) {
   noteInputs[x].addEventListener('blur', noteAjaxCall, false);
 }
+
 
 </script>

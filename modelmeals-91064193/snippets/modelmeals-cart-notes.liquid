@@ -7,15 +7,20 @@
 
 
 <div class="grid__item large--one-half cart__instructions">
-  <!--<p class="delivery-date">Delivery Date:&nbsp;&nbsp;<span id="date"></span></p><br><br>-->
+  <p class="delivery-date"><strong>Delivery Date:</strong>&nbsp;&nbsp;<span id="date"></span></p>
+  <input id="delivery-date" type="text" name="attributes[delivery-date]" value="{{ cart.attributes.delivery-date }}" style="display:none" />
+  <br><br>
   <label class="cart__instructions__label" for="CartSpecialInstructions">Allergies?:</label>
   <input type="text" id="allergies" class="cart-note" placeholder="Allergies we should be aware of?">
   <label class="cart__instructions__label" for="CartSpecialInstructions">Delivery Instructions:</label>
-  <textarea
+  <input
+    type="text"
     id="delivery"
     class="cart-note"
     placeholder="You'll enter your address at check out but please provide any specific delivery instructions for your driver here."
-  ></textarea>
+  />
+  <label class="cart__instructions__label" for="CartSpecialInstructions">Who can we thank for referring you?:</label>
+  <input type="text" id="referral" class="cart-note" placeholder="Who can we thank for referring you?">
   <textarea
     type="text"
     name="note"
@@ -28,42 +33,82 @@
 
 
 <script>
-
-var cartNote = "{% if note != '' %}{{ cart.note }}{% endif %}";
-var cartNoteLines = cartNote.replace(', ', '\n');
+// Get cart note from server, split it, and populate cooresponding inputs.
+var cartNote = {% if note != '' %}{{ cart.note | json }}{% endif %};
 if (cartNote !== '' && cartNote !== 'undefined') {
-  document.getElementById('CartSpecialInstructions').value = cartNoteLines;
-  if (cartNote.indexOf(', ') > 0) {
-    var cartText = cartNote.split(", ");
+  if (cartNote.indexOf('\r\n') > 0) {
+    var cartText = cartNote.split('\r\n');
     document.getElementById(cartText[0].toLowerCase().split(": ")[0]).value = cartText[0].split(': ')[1];
     document.getElementById(cartText[1].toLowerCase().split(": ")[0]).value = cartText[1].split(': ')[1];
+    document.getElementById(cartText[2].toLowerCase().split(": ")[0]).value = cartText[2].split(': ')[1];
   } else {
     document.getElementById(cartNote.toLowerCase().split(": ")[0]).value = cartNote.split(': ')[1];
   }
+  var cartNoteLines = cartNote;
+  document.getElementById('CartSpecialInstructions').value = cartNoteLines;
 }
 
 
 
-// Find and format next Sunday
 
+
+
+// Save delivery date as cart attribute.
+Shopify.updateCartDate = function(date) {
+  var params = {
+    type: 'POST',
+    url: '/cart/update.js',
+    data: 'attributes[delivery-date]=' + 'Delivery Date: ' + date,
+    dataType: 'json',
+    success: function(response) {
+      console.log(response)
+    },
+    error: function(XMLHttpRequest, textStatus) {
+      console.log(XMLHttpRequest, textStatus);
+    }
+  };
+  jQuery.ajax(params);
+};
+
+// update notes on keyup
+function attributeAjaxCall() {
+  var deliveryDate = month + "/" + dayNumber + "/" + year;
+  console.log(deliveryDate);
+  Shopify.updateCartDate(deliveryDate);
+}
+
+
+
+
+
+
+// Find nearest Sunday, either today if before 19 hours or next Sunday if after.
 var days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 function next(day) {
-  var today = new Date();
-  var today_day = today.getDay();
+  var date = new Date();
+  var today = date.getUTCDay();
+  var hour = date.getUTCHours();
   day = day.toLowerCase();
 
   for (var i = 7; i--;) {
     if (day === days[i]) {
-        day = (i < today_day) ? (i + 7) : i;
-        break;
+      if (i < today) {
+        day = i + 8;
+      } else {
+        if (hour >= 19) {
+          day = i + 8;
+        } else {
+          day = i + 1;
+        }
+      }
+      break;
     }
   }
-  var daysUntilNext = day - today_day;
-  return new Date().setDate(today.getDate() + daysUntilNext);
+  var daysUntilNext = day - today;
+  return new Date().setDate(date.getUTCDate() + daysUntilNext);
 }
 
-// insert a week day
 var nextDate = new Date(next( "sunday" ));
 var month = nextDate.getMonth() + 1;
 var dayNumber = nextDate.getDate();
@@ -71,5 +116,8 @@ var year = nextDate.getFullYear();
 
 if (document.getElementById('date')) {
   document.getElementById('date').innerHTML = month + "/" + dayNumber + "/" + year;
+  document.getElementById('delivery-date').value = month + "/" + dayNumber + "/" + year;
+  attributeAjaxCall(month, dayNumber, year);
 }
+
 </script>
